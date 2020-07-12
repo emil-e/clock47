@@ -2,11 +2,12 @@
 
 #include <cstdint>
 
-#include "display_types.h"
 #include "Widget.h"
+#include "display_defines.h"
 
 namespace display {
 
-void init(Widget *rootWidget);
+void init();
+void displayPanes(Pane *panes);
 
 } // namespace display

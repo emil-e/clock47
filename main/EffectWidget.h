@@ -2,11 +2,11 @@
 
 #include "Widget.h"
 
-class EffectWidget : public display::Widget {
+class EffectWidget : public ui::Widget {
 public:
-  explicit EffectWidget(display::Widget &child);
+  explicit EffectWidget(ui::Widget &child);
   void redraw(display::Pane *panes, int n, std::uint64_t timestamp) override;
 
 private:
-  display::Widget &_childWidget;
+  ui::Widget &_childWidget;
 };

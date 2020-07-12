@@ -19,9 +19,12 @@
 
 #include "ClockWidget.h"
 #include "Effectwidget.h"
+#include "TextWidget.h"
 #include "buttons.h"
 #include "display.h"
+#include "httpserver.h"
 #include "network.h"
+#include "ui.h"
 
 static const char *TIMEZONE = "CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
 
@@ -44,24 +47,18 @@ extern "C" void app_main(void) {
   ESP_ERROR_CHECK(esp_event_loop_create_default());
 
   buttons::init();
+  initFlash();
+  initTime();
 
+  ui::init();
   ClockWidget clockWidget;
   EffectWidget effectWidget(clockWidget);
-  display::init(&effectWidget);
-  initFlash();
+  ui::push(&effectWidget);
 
-  initTime();
   network::init();
+  // httpserver::init();
 
-  /* Start main application now */
-  while (1) {
-    time_t now;
-    struct tm timeinfo;
-    char strftime_buf[64];
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "Time is: %s", strftime_buf);
+  for (;;) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }

@@ -1,20 +1,11 @@
 #include "display.h"
 
-#include <algorithm>
-#include <cstring>
-#include <mutex>
-
 #include <esp_log.h>
 
 #include <driver/i2c.h>
 
-#include "Widget.h"
-
 namespace display {
 namespace {
-
-constexpr int FRAMES_PER_SECOND = 30;
-constexpr int FRAMES_TICK_INTERVAL = (1000 / FRAMES_PER_SECOND) / portTICK_PERIOD_MS;
 
 const char *TAG = "display";
 
@@ -145,9 +136,6 @@ Digit g_digits[NUM_PANES] = {
     /*Digit(I2C_NUM_1, 0x5F, GPIO_NUM_32),*/
 };
 
-std::mutex g_widgetMutex;
-Widget *g_rootWidget = nullptr;
-
 void initI2CPort(int port, int sda, int scl) {
   i2c_config_t config = {.mode = I2C_MODE_MASTER,
                          .sda_io_num = sda,
@@ -164,54 +152,20 @@ void initI2C(void) {
   initI2CPort(I2C_NUM_1, 25, 33);
 }
 
-
-void renderTask(void *params) {
-  Pane panes[NUM_PANES];
-  auto nextFrameTime = xTaskGetTickCount();
-
-  for (;;) {
-    for (int i = 0; i < NUM_PANES; i++) {
-      std::fill(begin(panes[i]), end(panes[i]), 0);
-    }
-
-    {
-      const auto lock = std::lock_guard(g_widgetMutex);
-      g_rootWidget->redraw(panes, NUM_PANES, nextFrameTime * portTICK_PERIOD_MS);
-    }
-    for (int i = 0; i < NUM_PANES; i++) {
-      g_digits[i].renderPane(panes[i]);
-    }
-    nextFrameTime += FRAMES_TICK_INTERVAL;
-
-    const auto now = xTaskGetTickCount();
-    while (now > nextFrameTime) {
-      ESP_LOGW(TAG, "Frame skipped, %d ticks overtime", now - nextFrameTime);
-      nextFrameTime += FRAMES_TICK_INTERVAL;
-    }
-
-    vTaskDelay(nextFrameTime - now);
-  }
-}
-
-void eventHandler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
-                  void *event_data) {
-  const auto lock = std::lock_guard(g_widgetMutex);
-  g_rootWidget->onEvent(event_base, event_id, event_data);
-}
-
 }  // namespace
 
-void init(Widget *rootWidget) {
+void init() {
   initI2C();
 
   for (std::size_t i = 0; i < NUM_PANES; i++) {
     g_digits[i].init();
   }
+}
 
-  g_rootWidget = rootWidget;
-  esp_event_handler_instance_register(ESP_EVENT_ANY_BASE, ESP_EVENT_ANY_ID, eventHandler, nullptr,
-                                      nullptr);
-  xTaskCreate(renderTask, "render", 1024 * 4, nullptr, 2, nullptr);
+void displayPanes(Pane *panes) {
+  for (int i = 0; i < NUM_PANES; i++) {
+    g_digits[i].renderPane(panes[i]);
+  }
 }
 
 }  // namespace display

@@ -5,7 +5,7 @@
 
 #include "draw.h"
 
-EffectWidget::EffectWidget(display::Widget &child) : _childWidget(child) {}
+EffectWidget::EffectWidget(ui::Widget &child) : _childWidget(child) {}
 
 void EffectWidget::redraw(display::Pane *panes, int n, std::uint64_t timestamp) {
   _childWidget.redraw(panes, n, timestamp);

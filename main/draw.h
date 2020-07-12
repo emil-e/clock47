@@ -1,6 +1,6 @@
 #pragma once
 
-#include "display_types.h"
+#include "display_defines.h"
 
 namespace draw {
 

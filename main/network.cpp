@@ -11,6 +11,11 @@
 #include <wifi_provisioning/manager.h>
 #include <wifi_provisioning/scheme_ble.h>
 
+#include <mdns.h>
+
+#include "TextWidget.h"
+#include "ui.h"
+
 static const char *TAG = "network";
 
 namespace network {
@@ -20,12 +25,15 @@ namespace {
 const int WIFI_CONNECTED_EVENT = BIT0;
 EventGroupHandle_t wifi_event_group;
 
+TextWidget g_statusWidget;
+
 /* Event handler for catching system events */
 void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *event_data) {
   if (event_base == WIFI_PROV_EVENT) {
     switch (event_id) {
     case WIFI_PROV_START:
       ESP_LOGI(TAG, "Provisioning started");
+      // g_statusWidget.setText("Awaiting provisioning");
       break;
     case WIFI_PROV_CRED_RECV: {
       wifi_sta_config_t *wifi_sta_cfg = (wifi_sta_config_t *)event_data;
@@ -42,10 +50,12 @@ void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *ev
                "\n\tPlease reset to factory and retry provisioning",
                (*reason == WIFI_PROV_STA_AUTH_ERROR) ? "Wi-Fi station authentication failed"
                                                      : "Wi-Fi access-point not found");
+      // g_statusWidget.setText("Provisioning failed");
       break;
     }
     case WIFI_PROV_CRED_SUCCESS:
       ESP_LOGI(TAG, "Provisioning successful");
+      // g_statusWidget.setText("Provisioning successful");
       break;
     case WIFI_PROV_END:
       /* De-initialize manager once provisioning is finished */
@@ -55,14 +65,18 @@ void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *ev
       break;
     }
   } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+    g_statusWidget.setText("Connecting");
     esp_wifi_connect();
   } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     ESP_LOGI(TAG, "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
+    ui::remove(&g_statusWidget);
     /* Signal main application to continue execution */
     xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_EVENT);
   } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
     ESP_LOGI(TAG, "Disconnected. Connecting to the AP again...");
+    // ui::push(&g_statusWidget);
+    // g_statusWidget.setText("Reconnecting");
     esp_wifi_connect();
   }
 }
@@ -98,9 +112,9 @@ void initWifi() {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-  wifi_prov_mgr_config_t config = {.scheme = wifi_prov_scheme_ble,
-                                   .scheme_event_handler =
-                                       WIFI_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM};
+  wifi_prov_mgr_config_t config = {};
+  config.scheme = wifi_prov_scheme_ble;
+  config.scheme_event_handler = WIFI_PROV_SCHEME_BLE_EVENT_HANDLER_FREE_BTDM;
 
   ESP_ERROR_CHECK(wifi_prov_mgr_init(config));
 
@@ -144,6 +158,12 @@ void initWifi() {
   xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_EVENT, false, true, portMAX_DELAY);
 }
 
+void initMdns() {
+  ESP_ERROR_CHECK(mdns_init());
+  mdns_hostname_set("clock47");
+  mdns_instance_name_set("Clock 47");
+}
+
 void initSntp() {
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
   sntp_setservername(0, "pool.ntp.org");
@@ -154,7 +174,10 @@ void initSntp() {
 } // namespace
 
 void init() {
+  g_statusWidget.setText("Initializing");
+  ui::push(&g_statusWidget);
   initWifi();
+  initMdns();
   initSntp();
 }
 
