@@ -1,7 +1,8 @@
 idf_component_register(
   SRCS
+    "${CMAKE_BINARY_DIR}/web/web.cpp"
     "ClockWidget.cpp"
-    "EffectWidget.cpp"
+    "DateWidget.cpp"
     "StackWidget.cpp"
     "TextWidget.cpp"
     "Widget.cpp"
@@ -9,7 +10,10 @@ idf_component_register(
     "clock47_main.cpp"
     "display.cpp"
     "draw.cpp"
+    "effect.cpp"
     "httpserver.cpp"
+    "message.cpp"
+    "mode.cpp"
     "network.cpp"
     "ui.cpp"
   INCLUDE_DIRS

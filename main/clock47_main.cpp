@@ -18,11 +18,12 @@
 #include <nvs_flash.h>
 
 #include "ClockWidget.h"
-#include "Effectwidget.h"
-#include "TextWidget.h"
+#include "DateWidget.h"
 #include "buttons.h"
 #include "display.h"
 #include "httpserver.h"
+#include "message.h"
+#include "mode.h"
 #include "network.h"
 #include "ui.h"
 
@@ -51,12 +52,16 @@ extern "C" void app_main(void) {
   initTime();
 
   ui::init();
+  ui::push(mode::widget());
+
   ClockWidget clockWidget;
-  EffectWidget effectWidget(clockWidget);
-  ui::push(&effectWidget);
+  mode::add("clock", &clockWidget);
+
+  DateWidget dateWidget;
+  mode::add("date", &dateWidget);
 
   network::init();
-  // httpserver::init();
+  httpserver::init();
 
   for (;;) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);

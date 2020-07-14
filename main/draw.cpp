@@ -154,7 +154,7 @@ std::uint64_t charToFrameBits(char c) {
 
 
 
-void character(display::Pane &pane, char c, const Color &color) {
+void character(display::Pane &pane, char c, const ui::Color &color) {
   auto bits = charToFrameBits(c);
   for (int i = 0; i < display::LEDS_PER_PANE; i++) {
     if ((bits & 0x1) != 0) {
@@ -166,7 +166,7 @@ void character(display::Pane &pane, char c, const Color &color) {
   }
 }
 
-void string(display::Pane *panes, int numPanes, const char *str, const Color &color) {
+void string(display::Pane *panes, int numPanes, const char *str, const ui::Color &color) {
   bool ended = false;
   for (int i = 0; i < numPanes; i++) {
     if (str[i] == '\0') {

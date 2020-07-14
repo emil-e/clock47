@@ -1,14 +1,12 @@
-#include "EffectWidget.h"
+#include "effect.h"
 
-#include <cmath>
 #include <random>
 
 #include "draw.h"
 
-EffectWidget::EffectWidget(ui::Widget &child) : _childWidget(child) {}
+namespace effect {
 
-void EffectWidget::redraw(display::Pane *panes, int n, std::uint64_t timestamp) {
-  _childWidget.redraw(panes, n, timestamp);
+void glow(display::Pane *panes, std::size_t n, std::uint64_t timestamp) {
   std::minstd_rand random;
   for (int p = 0; p < n; p++) {
     auto &pane = panes[p];
@@ -25,3 +23,5 @@ void EffectWidget::redraw(display::Pane *panes, int n, std::uint64_t timestamp) 
     }
   }
 }
+
+} // namespace effect

@@ -1,19 +1,9 @@
 #pragma once
 
+#include "Color.h"
 #include "display_defines.h"
 
 namespace draw {
-
-struct Color {
-  constexpr Color() = default;
-  constexpr Color(std::uint8_t r, std::uint8_t g, std::uint8_t b) : r(r), g(g), b(b) {}
-
-  std::uint8_t r = 0;;
-  std::uint8_t g = 0;
-  std::uint8_t b = 0;
-};
-
-constexpr Color WHITE = Color(255, 255, 255);
 
 constexpr std::size_t bOffset(int led) {
   const int col = led % 12;
@@ -26,7 +16,7 @@ constexpr std::size_t gOffset(int led) { return bOffset(led) + 0x10; }
 
 constexpr std::size_t rOffset(int led) { return bOffset(led) + 0x20; }
 
-void character(display::Pane &pane, char c, const Color &color);
-void string(display::Pane *panes, int numPanes, const char *str, const Color &color);
+void character(display::Pane &pane, char c, const ui::Color &color);
+void string(display::Pane *panes, int numPanes, const char *str, const ui::Color &color);
 
 } // namespace draw

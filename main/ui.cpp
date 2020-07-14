@@ -20,7 +20,7 @@ StackWidget g_rootWidget;
 
 void eventHandler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                   void *event_data) {
-  // const auto lock = std::lock_guard(g_widgetMutex);
+  const auto lock = std::lock_guard(g_widgetMutex);
   g_rootWidget.onEvent(event_base, event_id, event_data);
 }
 

@@ -1,0 +1,5 @@
+namespace httpserver {
+
+const char *WEBPAGE = R"RAW(@WEBPAGE@)RAW";
+
+} // namespace httpserver

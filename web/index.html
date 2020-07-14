@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <title>Clock47</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+    <script>
+      let colorPicker = new iro.ColorPicker("#color-picker", {
+        // Set the size of the color picker
+        width: 320,
+        // Set the initial color to pure red
+        color: "#ffffff"
+      });
+      
+      function sendMessage() {
+        let messageInput = document.getElementById("message");
+        let message = messageInput.value;
+        let color = colorPicker.color.hexString.substring(1);
+        
+        let request = new XMLHttpRequest();
+        request.open("PUT", "/message?color=" + color);
+        request.send(messageInput.value);
+      }
+
+      function clearMessage() {
+        let request = new XMLHttpRequest();
+        request.open("DELETE", "/message");
+        request.send("");
+      }
+    </script>
+    <style>
+      body {
+          font-family: sans-serif;
+          font-size: 20px;
+          background-color: #333333;
+          color: white;
+      }
+
+      .input-field {
+          margin-bottom: 20px;
+          font-weight: bold;
+          padding: 5px;
+      }
+
+      .field-label {
+          margin-bottom: 10px;
+      }
+
+      #color-picker {
+          width: 320px;
+          margin: auto;
+      }
+
+      #message {
+          font-size: 35px;
+          padding: 10px;
+          width: 100%;
+          border: 2px dotted grey;
+          background-color: #222222;
+          color: white;
+      }
+
+      #form {
+          margin-bottom: 30px;
+      }
+
+      button {
+          border: 2px dotted grey;
+          font-size: 20px;
+          padding: 10px;
+          width: 100%;
+          margin-bottom: 5px;
+          background: #222222;
+          color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="form">
+      <div class="input-field">
+        <div class="field-label">Message</div>
+        <input type="text" id="message">
+      </div>
+      <div class="input-field">
+        <div class="field-label">Color</div>
+        <div id="color-picker"></div>
+      </div>
+    </div>
+    <button id="send-button" onclick="sendMessage()">Send</button>
+    <button id="clear-button" onclick="clearMessage()">Clear</button>
+  </body>
+</html>
