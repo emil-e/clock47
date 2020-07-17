@@ -9,5 +9,6 @@ namespace buttons {
 enum { BUTTON_UP, BUTTON_DOWN };
 
 void init();
+bool state(std::size_t index);
 
 }  // namespace buttons

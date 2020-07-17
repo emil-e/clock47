@@ -15,7 +15,7 @@ void ClockWidget::redraw(display::Pane *panes, int n, std::uint64_t timestamp) {
   localtime_r(&now, &timeinfo);
 
   char buffer[64];
-  strftime(buffer, sizeof(buffer), "%H%M", &timeinfo);
+  strftime(buffer, sizeof(buffer), "%H:%M", &timeinfo);
 
   draw::string(panes, n, buffer, ui::color::WHITE);
   effect::glow(panes, n, timestamp);

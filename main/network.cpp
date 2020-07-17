@@ -14,6 +14,7 @@
 #include <mdns.h>
 
 #include "TextWidget.h"
+#include "buttons.h"
 #include "ui.h"
 
 static const char *TAG = "network";
@@ -158,6 +159,30 @@ void initWifi() {
   xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_EVENT, false, true, portMAX_DELAY);
 }
 
+TimerHandle_t g_wifiResetTimer;
+
+void onWifiResetTimer(TimerHandle_t xTimer) {
+  ESP_LOGI(TAG, "Wifi reset trigger!");
+  esp_wifi_restore();
+  esp_restart();
+}
+
+void wifiResetEventHandler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
+                  void *event_data) {
+  if (buttons::state(0) && buttons::state(1)) {
+    xTimerStart(g_wifiResetTimer, 0);
+  } else {
+    xTimerStop(g_wifiResetTimer, 0);
+  }
+}
+
+void initWifiResetTrigger() {
+  g_wifiResetTimer = xTimerCreate("wifi_reset", (10 * 1000) / portTICK_PERIOD_MS, false, nullptr,
+                                  onWifiResetTimer);
+  esp_event_handler_instance_register(BUTTON_EVENT, ESP_EVENT_ANY_ID, wifiResetEventHandler,
+                                      nullptr, nullptr);
+}
+
 void initMdns() {
   ESP_ERROR_CHECK(mdns_init());
   mdns_hostname_set("clock47");
@@ -177,6 +202,7 @@ void init() {
   g_statusWidget.setText("Initializing");
   ui::push(&g_statusWidget);
   initWifi();
+  initWifiResetTrigger();
   initMdns();
   initSntp();
 }

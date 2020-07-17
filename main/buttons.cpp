@@ -1,6 +1,6 @@
 #include "buttons.h"
 
-#include "display.h"
+#include <mutex>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -41,16 +41,26 @@ public:
     }
     _lastTime = now;
 
-    const auto oldState = _state;
-    _state = !bool(gpio_get_level(_pin));
-    if (oldState != _state) {
-      return _state ? UpdateStatus::DOWN : UpdateStatus::UP;
-    } else {
-      return UpdateStatus::NO_CHANGE;
+    const auto newState = !bool(gpio_get_level(_pin));
+    {
+      const auto lock = std::lock_guard(_mutex);
+      const auto oldState = _state;
+      _state = newState;
+      if (oldState != _state) {
+        return _state ? UpdateStatus::DOWN : UpdateStatus::UP;
+      } else {
+        return UpdateStatus::NO_CHANGE;
+      }
     }
   }
 
+  bool state() const {
+    const auto lock = std::lock_guard(_mutex);
+    return _state;
+  }
+
 private:
+  mutable std::mutex _mutex;
   gpio_num_t _pin;
   TickType_t _lastTime = 0;
   bool _state = false;
@@ -88,6 +98,14 @@ void init() {
 
   // TODO: task priority, what should it be?
   xTaskCreate(buttonTask, "buttons", 2048, nullptr, 1, nullptr);
+}
+
+bool state(std::size_t index) {
+  if (index >= NUM_BUTTONS) {
+    return false;
+  }
+
+  return g_buttons[index].state();
 }
 
 } // namespace buttons

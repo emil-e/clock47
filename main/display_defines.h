@@ -4,7 +4,7 @@
 
 namespace display {
 
-constexpr int NUM_PANES = 4;
+constexpr int NUM_PANES = 5;
 constexpr int LEDS_PER_PANE = 47;
 constexpr std::size_t PANE_BUFFER_SIZE = 190;
 

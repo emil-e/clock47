@@ -131,9 +131,9 @@ class Digit {
 };
 
 Digit g_digits[NUM_PANES] = {
-    Digit(I2C_NUM_0, 0x50, GPIO_NUM_5), Digit(I2C_NUM_0, 0x5F, GPIO_NUM_16),
-    Digit(I2C_NUM_0, 0x5A, GPIO_NUM_4), Digit(I2C_NUM_1, 0x50, GPIO_NUM_26),
-    /*Digit(I2C_NUM_1, 0x5F, GPIO_NUM_32),*/
+    Digit(I2C_NUM_0, 0x50, GPIO_NUM_5),  Digit(I2C_NUM_0, 0x5F, GPIO_NUM_16),
+    Digit(I2C_NUM_0, 0x5A, GPIO_NUM_4),  Digit(I2C_NUM_1, 0x50, GPIO_NUM_26),
+    Digit(I2C_NUM_1, 0x5F, GPIO_NUM_32),
 };
 
 void initI2CPort(int port, int sda, int scl) {

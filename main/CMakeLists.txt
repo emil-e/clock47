@@ -11,6 +11,7 @@ idf_component_register(
     "display.cpp"
     "draw.cpp"
     "effect.cpp"
+    "fastmath.cpp"
     "httpserver.cpp"
     "message.cpp"
     "mode.cpp"
