@@ -21,6 +21,7 @@
 #include "DateWidget.h"
 #include "buttons.h"
 #include "display.h"
+#include "effect.h"
 #include "httpserver.h"
 #include "message.h"
 #include "mode.h"
@@ -53,6 +54,8 @@ extern "C" void app_main(void) {
 
   ui::init();
   ui::push(mode::widget());
+
+  effect::init();
 
   ClockWidget clockWidget;
   mode::add("clock", &clockWidget);

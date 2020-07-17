@@ -5,6 +5,7 @@
 #include <esp_http_server.h>
 
 #include "message.h"
+#include "property.h"
 
 namespace httpserver {
 
@@ -75,6 +76,35 @@ esp_err_t handleMessageDelete(httpd_req_t *req) {
   return ESP_OK;
 }
 
+const char *propertyName(httpd_req_t *req) {
+  std::size_t lastSlash = 0;
+  for (std::size_t i = 0; req->uri[i] != '\0'; i++) {
+    if (req->uri[i] == '/') {
+      lastSlash = i;
+    }
+  }
+
+  return req->uri + lastSlash + 1;
+}
+
+esp_err_t handlePropertyGet(httpd_req_t *req) {
+  httpd_resp_set_type(req, CONTENT_TYPE_TEXT);
+  set_allow_origin_header(req);
+  const auto value = property::get(propertyName(req));
+  httpd_resp_sendstr(req, value.c_str());
+  return ESP_OK;
+}
+
+esp_err_t handlePropertyPut(httpd_req_t *req) {
+  char valueBuffer[256 + 1];
+  const auto len = httpd_req_recv(req, valueBuffer, 256);
+  valueBuffer[len] = '\0';
+  property::set(propertyName(req), valueBuffer);
+  set_allow_origin_header(req);
+  httpd_resp_sendstr(req, "");
+  return ESP_OK;
+}
+
 esp_err_t handleRoot(httpd_req_t *req) {
   message::clear();
   httpd_resp_sendstr(req, WEBPAGE);
@@ -94,6 +124,8 @@ httpd_uri_t URIS[] = {
     {.uri = "/time", .method = HTTP_GET, .handler = handleTime, .user_ctx = NULL},
     {.uri = "/message", .method = HTTP_PUT, .handler = handleMessagePost, .user_ctx = NULL},
     {.uri = "/message", .method = HTTP_DELETE, .handler = handleMessageDelete, .user_ctx = NULL},
+    {.uri = "/property/*", .method = HTTP_GET, .handler = handlePropertyGet, .user_ctx = NULL},
+    {.uri = "/property/*", .method = HTTP_PUT, .handler = handlePropertyPut, .user_ctx = NULL},
     {.uri = "/", .method = HTTP_GET, .handler = handleRoot, .user_ctx = NULL},
     {.uri = "/*", .method = HTTP_OPTIONS, .handler = handleCors, .user_ctx = NULL},
 };
