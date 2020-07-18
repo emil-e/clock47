@@ -7,6 +7,8 @@
 #include <esp_log.h>
 
 #include "buttons.h"
+#include "effect.h"
+#include "property.h"
 
 namespace mode {
 namespace {
@@ -32,6 +34,7 @@ public:
     if (!g_modes.empty()) {
       g_modes[g_currentMode].widget->redraw(panes, n, timestamp);
     }
+    effect::apply(panes, n, timestamp);
   }
 
   void onEvent(esp_event_base_t base, std::int32_t id, void *data) override {
@@ -46,9 +49,43 @@ public:
   }
 };
 
+class ModeProperty : public property::Property {
+public:
+  void set(const std::string &value) override { switchTo(value.c_str()); }
+
+  std::string get() const override {
+    const auto lock = std::lock_guard(g_mutex);
+    return g_modes[g_currentMode].id;
+  }
+};
+
+class ModeOptionsProperty : public property::Property {
+public:
+  std::string get() const override {
+    const auto lock = std::lock_guard(g_mutex);
+    std::string modes;
+    for (std::size_t i = 0; i < g_modes.size(); i++) {
+      modes += g_modes[i].id;
+      if (i != (g_modes.size() - 1)) {
+        modes += ",";
+      }
+    }
+
+    return modes;
+  }
+};
+
 ModeWidget g_widget;
+ModeProperty g_modeProperty;
+ModeOptionsProperty g_modeOptionsProperty;
 
 } // namespace
+
+void init() {
+  effect::init();
+  property::add("mode", &g_modeProperty);
+  property::add("modeOptions", &g_modeOptionsProperty);
+}
 
 void add(const char *id, ui::Widget *widget) {
   const auto lock = std::lock_guard(g_mutex);

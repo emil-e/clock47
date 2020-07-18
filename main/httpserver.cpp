@@ -2,18 +2,25 @@
 
 #include <time.h>
 
+#include <cJSON.h>
+
 #include <esp_http_server.h>
 
-#include "message.h"
 #include "property.h"
 
 namespace httpserver {
 
-extern const char *WEBPAGE;
+extern const char *INDEX_HTML;
+extern const char *STYLE_CSS;
+extern const char *SCRIPT_JSX;
 
 namespace {
 
 const char CONTENT_TYPE_TEXT[] = "text/plain";
+const char CONTENT_TYPE_JSON[] = "application/json";
+const char CONTENT_TYPE_CSS[] = "text/css";
+const char CONTENT_TYPE_STYLE[] = "text/css";
+const char CONTENT_TYPE_JSX[] = "text/jsx";
 
 httpd_handle_t g_httpd;
 
@@ -45,37 +52,6 @@ esp_err_t handleTime(httpd_req_t *req) {
   return ESP_OK;
 }
 
-ui::Color parseColor(httpd_req_t *req) {
-  char queryBuffer[20];
-  if (httpd_req_get_url_query_str(req, queryBuffer, sizeof(queryBuffer)) != ESP_OK) {
-    return ui::color::WHITE;
-  }
-  char colorBuffer[2 * 3 + 1];
-  if (httpd_query_key_value(queryBuffer, "color", colorBuffer, sizeof(colorBuffer)) != ESP_OK) {
-    return ui::color::WHITE;
-  }
-
-  return ui::Color(std::strtoull(colorBuffer, nullptr, 16));
-}
-
-esp_err_t handleMessagePost(httpd_req_t *req) {
-  char msgBuffer[message::MAX_LENGTH + 1];
-  const auto len = httpd_req_recv(req, msgBuffer, message::MAX_LENGTH);
-  msgBuffer[len] = '\0';
-
-  message::display(msgBuffer, parseColor(req));
-  set_allow_origin_header(req);
-  httpd_resp_sendstr(req, "");
-  return ESP_OK;
-}
-
-esp_err_t handleMessageDelete(httpd_req_t *req) {
-  message::clear();
-  set_allow_origin_header(req);
-  httpd_resp_sendstr(req, "");
-  return ESP_OK;
-}
-
 const char *propertyName(httpd_req_t *req) {
   std::size_t lastSlash = 0;
   for (std::size_t i = 0; req->uri[i] != '\0'; i++) {
@@ -87,7 +63,20 @@ const char *propertyName(httpd_req_t *req) {
   return req->uri + lastSlash + 1;
 }
 
-esp_err_t handlePropertyGet(httpd_req_t *req) {
+esp_err_t handlePropertiesList(httpd_req_t *req) {
+  const auto root = cJSON_CreateObject();
+  for (const auto &key : property::keys()) {
+    const auto value = property::get(key.c_str());
+    cJSON_AddItemToObject(root, key.c_str(), cJSON_CreateString(value.c_str()));
+  }
+  httpd_resp_set_type(req, CONTENT_TYPE_JSON);
+  set_allow_origin_header(req);
+  httpd_resp_sendstr(req, cJSON_PrintUnformatted(root));
+  cJSON_Delete(root);
+  return ESP_OK;
+}
+
+esp_err_t handlePropertiesGet(httpd_req_t *req) {
   httpd_resp_set_type(req, CONTENT_TYPE_TEXT);
   set_allow_origin_header(req);
   const auto value = property::get(propertyName(req));
@@ -95,7 +84,7 @@ esp_err_t handlePropertyGet(httpd_req_t *req) {
   return ESP_OK;
 }
 
-esp_err_t handlePropertyPut(httpd_req_t *req) {
+esp_err_t handlePropertiesPut(httpd_req_t *req) {
   char valueBuffer[256 + 1];
   const auto len = httpd_req_recv(req, valueBuffer, 256);
   valueBuffer[len] = '\0';
@@ -105,9 +94,23 @@ esp_err_t handlePropertyPut(httpd_req_t *req) {
   return ESP_OK;
 }
 
-esp_err_t handleRoot(httpd_req_t *req) {
-  message::clear();
-  httpd_resp_sendstr(req, WEBPAGE);
+esp_err_t handleIndex(httpd_req_t *req) {
+  set_allow_origin_header(req);
+  httpd_resp_sendstr(req, INDEX_HTML);
+  return ESP_OK;
+}
+
+esp_err_t handleStyle(httpd_req_t *req) {
+  httpd_resp_set_type(req, CONTENT_TYPE_CSS);
+  set_allow_origin_header(req);
+  httpd_resp_sendstr(req, STYLE_CSS);
+  return ESP_OK;
+}
+
+esp_err_t handleScript(httpd_req_t *req) {
+  httpd_resp_set_type(req, CONTENT_TYPE_JSX);
+  set_allow_origin_header(req);
+  httpd_resp_sendstr(req, SCRIPT_JSX);
   return ESP_OK;
 }
 
@@ -122,11 +125,13 @@ esp_err_t handleCors(httpd_req_t *req) {
 httpd_uri_t URIS[] = {
     {.uri = "/ping", .method = HTTP_GET, .handler = handlePing, .user_ctx = NULL},
     {.uri = "/time", .method = HTTP_GET, .handler = handleTime, .user_ctx = NULL},
-    {.uri = "/message", .method = HTTP_PUT, .handler = handleMessagePost, .user_ctx = NULL},
-    {.uri = "/message", .method = HTTP_DELETE, .handler = handleMessageDelete, .user_ctx = NULL},
-    {.uri = "/property/*", .method = HTTP_GET, .handler = handlePropertyGet, .user_ctx = NULL},
-    {.uri = "/property/*", .method = HTTP_PUT, .handler = handlePropertyPut, .user_ctx = NULL},
-    {.uri = "/", .method = HTTP_GET, .handler = handleRoot, .user_ctx = NULL},
+    {.uri = "/properties", .method = HTTP_GET, .handler = handlePropertiesList, .user_ctx = NULL},
+    {.uri = "/properties/*", .method = HTTP_GET, .handler = handlePropertiesGet, .user_ctx = NULL},
+    {.uri = "/properties/*", .method = HTTP_PUT, .handler = handlePropertiesPut, .user_ctx = NULL},
+    {.uri = "/", .method = HTTP_GET, .handler = handleIndex, .user_ctx = NULL},
+    {.uri = "/index.html", .method = HTTP_GET, .handler = handleIndex, .user_ctx = NULL},
+    {.uri = "/style.css", .method = HTTP_GET, .handler = handleStyle, .user_ctx = NULL},
+    {.uri = "/script.jsx", .method = HTTP_GET, .handler = handleScript, .user_ctx = NULL},
     {.uri = "/*", .method = HTTP_OPTIONS, .handler = handleCors, .user_ctx = NULL},
 };
 
@@ -135,6 +140,7 @@ httpd_uri_t URIS[] = {
 void init() {
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.uri_match_fn = httpd_uri_match_wildcard;
+  config.max_uri_handlers = 16;
   ESP_ERROR_CHECK(httpd_start(&g_httpd, &config));
 
   for (std::size_t i = 0; i < sizeof(URIS) / sizeof(httpd_uri_t);i++) {

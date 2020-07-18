@@ -12,7 +12,7 @@ namespace {
 
 const char *TAG = "ui";
 
-constexpr int FRAMES_PER_SECOND = 30;
+constexpr int FRAMES_PER_SECOND = 20;
 constexpr int FRAMES_TICK_INTERVAL = (1000 / FRAMES_PER_SECOND) / portTICK_PERIOD_MS;
 
 std::mutex g_widgetMutex;

@@ -4,6 +4,7 @@ idf_component_register(
     "ClockWidget.cpp"
     "Color.cpp"
     "DateWidget.cpp"
+    "GenericTextWidget.cpp"
     "StackWidget.cpp"
     "TextWidget.cpp"
     "Widget.cpp"

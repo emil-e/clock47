@@ -1,3 +1,7 @@
-file(READ "index.html" WEBPAGE)
+file(READ "index.html" INDEX_HTML)
+file(READ "style.css" STYLE_CSS)
+file(READ "script.jsx" SCRIPT_JSX)
 configure_file("web.cpp.in" "web.cpp")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "index.html")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "style.css")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "script.jsx")

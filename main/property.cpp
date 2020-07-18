@@ -11,6 +11,7 @@ std::mutex g_mutex;
 std::unordered_map<std::string, Property *> g_properties;
 
 } // namespace
+
 void add(const std::string &key, Property *proeprty) {
   const auto lock = std::lock_guard(g_mutex);
   g_properties[key] = proeprty;
@@ -32,6 +33,16 @@ std::string get(const std::string &key) {
   }
 
   return it->second->get();
+}
+
+std::vector<std::string> keys() {
+  std::vector<std::string> keyStrings;
+  keyStrings.reserve(g_properties.size());
+  for (const auto p : g_properties) {
+    keyStrings.push_back(p.first);
+  }
+
+  return keyStrings;
 }
 
 } // namespace property

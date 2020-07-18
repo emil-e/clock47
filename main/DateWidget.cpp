@@ -3,7 +3,6 @@
 #include <time.h>
 
 #include "draw.h"
-#include "effect.h"
 
 DateWidget::DateWidget() {}
 
@@ -18,5 +17,4 @@ void DateWidget::redraw(display::Pane *panes, int n, std::uint64_t timestamp) {
   strftime(buffer, sizeof(buffer), "%d%b", &timeinfo);
 
   draw::string(panes, n, buffer, ui::color::WHITE);
-  effect::glow(panes, n, timestamp);
 }

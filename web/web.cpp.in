@@ -1,5 +1,9 @@
+#include <cstring>
+
 namespace httpserver {
 
-const char *WEBPAGE = R"RAW(@WEBPAGE@)RAW";
+const char *INDEX_HTML = R"RAW(@INDEX_HTML@)RAW";
+const char *STYLE_CSS = R"RAW(@STYLE_CSS@)RAW";
+const char *SCRIPT_JSX = R"RAW(@SCRIPT_JSX@)RAW";
 
 } // namespace httpserver

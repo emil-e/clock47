@@ -13,7 +13,7 @@
 
 #include <mdns.h>
 
-#include "TextWidget.h"
+#include "GenericTextWidget.h"
 #include "buttons.h"
 #include "ui.h"
 
@@ -26,7 +26,7 @@ namespace {
 const int WIFI_CONNECTED_EVENT = BIT0;
 EventGroupHandle_t wifi_event_group;
 
-TextWidget g_statusWidget;
+GenericTextWidget g_statusWidget;
 
 /* Event handler for catching system events */
 void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *event_data) {
@@ -124,7 +124,7 @@ void initWifi() {
 
   if (!provisioned) {
     ESP_LOGI(TAG, "Starting provisioning");
-    char service_name[12];
+    char service_name[15];
     getDeviceServiceName(service_name, sizeof(service_name));
     wifi_prov_security_t security = WIFI_PROV_SECURITY_1;
 

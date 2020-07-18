@@ -4,6 +4,7 @@
 
 namespace mode {
 
+void init();
 void add(const char *id, ui::Widget *widget);
 void switchTo(const char *id);
 const char *currentMode();

@@ -50,13 +50,6 @@ constexpr T lerp(T a, T b, T t) {
   return a * (1.0 - t) + b * t;
 }
 
-} // namespace
-
-void init() {
-  property::add("color0", &g_color0);
-  property::add("color1", &g_color1);
-}
-
 void glow(display::Pane *panes, std::size_t n, std::uint64_t timestamp) {
   const auto lock = std::lock_guard(g_mutex);
   std::minstd_rand random;
@@ -74,6 +67,17 @@ void glow(display::Pane *panes, std::size_t n, std::uint64_t timestamp) {
       pane[draw::bOffset(i)] *= lerp<float>(g_color0->bf(), g_color1->bf(), x);
     }
   }
+}
+
+} // namespace
+
+void init() {
+  property::add("color0", &g_color0);
+  property::add("color1", &g_color1);
+}
+
+void apply(display::Pane *panes, std::size_t n, std::uint64_t timestamp) {
+  glow(panes, n, timestamp);
 }
 
 } // namespace effect
