@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -29,7 +30,7 @@
 
 static const char *TIMEZONE = "CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";
 
-static const char *TAG = "main";
+static const char *TAG [[gnu::unused]] = "main";
 
 static void initFlash(void) {
   esp_err_t ret = nvs_flash_init();

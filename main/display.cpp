@@ -4,6 +4,8 @@
 
 #include <driver/i2c.h>
 
+#include <freertos/FreeRTOS.h>
+
 namespace display {
 namespace {
 
@@ -57,12 +59,12 @@ public:
 
   esp_err_t exec() {
     i2c_master_stop(_cmd);
-    return i2c_master_cmd_begin(_i2cPort, _cmd, 1000 / portTICK_RATE_MS);
+    return i2c_master_cmd_begin(_i2cPort, _cmd, pdMS_TO_TICKS(1000));
   }
 
   ~Commands() { i2c_cmd_link_delete(_cmd); }
 
- private:
+private:
   void selectReg(std::uint8_t reg) {
     i2c_master_start(_cmd);
     i2c_master_write_byte(_cmd, (_address << 1) | I2C_MASTER_WRITE, true);
@@ -75,7 +77,7 @@ public:
 };
 
 class Digit {
- public:
+public:
   Digit(i2c_port_t i2cPort, std::uint8_t address, gpio_num_t sdbPin)
       : _i2cPort(i2cPort), _address(address), _sdbPin(sdbPin) {}
 
@@ -124,7 +126,7 @@ class Digit {
     ESP_ERROR_CHECK(cmds.exec());
   }
 
- private:
+private:
   i2c_port_t _i2cPort;
   std::uint8_t _address;
   gpio_num_t _sdbPin;
@@ -136,13 +138,14 @@ Digit g_digits[NUM_PANES] = {
     Digit(I2C_NUM_1, 0x5F, GPIO_NUM_32),
 };
 
-void initI2CPort(int port, int sda, int scl) {
+void initI2CPort(i2c_port_t port, int sda, int scl) {
   i2c_config_t config = {.mode = I2C_MODE_MASTER,
                          .sda_io_num = sda,
                          .scl_io_num = scl,
                          .sda_pullup_en = false,
                          .scl_pullup_en = false,
-                         .master = {.clk_speed = 400000}};
+                         .master = {.clk_speed = 400000},
+                         .clk_flags = 0};
   ESP_ERROR_CHECK(i2c_param_config(port, &config));
   ESP_ERROR_CHECK(i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0));
 }
@@ -152,7 +155,7 @@ void initI2C(void) {
   initI2CPort(I2C_NUM_1, 25, 33);
 }
 
-}  // namespace
+} // namespace
 
 void init() {
   initI2C();
@@ -168,4 +171,4 @@ void displayPanes(Pane *panes) {
   }
 }
 
-}  // namespace display
+} // namespace display

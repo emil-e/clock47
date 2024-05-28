@@ -41,7 +41,7 @@ void renderTask(void *params) {
 
     const auto now = xTaskGetTickCount();
     while (now > nextFrameTime) {
-      ESP_LOGW(TAG, "Frame skipped, %d ticks overtime", now - nextFrameTime);
+      ESP_LOGW(TAG, "Frame skipped, %lu ticks overtime", now - nextFrameTime);
       nextFrameTime += FRAMES_TICK_INTERVAL;
     }
 

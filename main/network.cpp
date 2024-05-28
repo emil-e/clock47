@@ -29,7 +29,7 @@ EventGroupHandle_t wifi_event_group;
 GenericTextWidget g_statusWidget;
 
 /* Event handler for catching system events */
-void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *event_data) {
+void eventHandler(void *arg, esp_event_base_t event_base, std::int32_t event_id, void *event_data) {
   if (event_base == WIFI_PROV_EVENT) {
     switch (event_id) {
     case WIFI_PROV_START:
@@ -83,7 +83,7 @@ void eventHandler(void *arg, esp_event_base_t event_base, int event_id, void *ev
 }
 
 void timeSyncNotificationCallback(struct timeval *tv) {
-  ESP_LOGI(TAG, "Time synchronized: %ld", tv->tv_sec);
+  ESP_LOGI(TAG, "Time synchronized: %lld", tv->tv_sec);
 }
 
 void wifiInitSta() {
@@ -190,10 +190,10 @@ void initMdns() {
 }
 
 void initSntp() {
-  sntp_setoperatingmode(SNTP_OPMODE_POLL);
-  sntp_setservername(0, "pool.ntp.org");
+  esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+  esp_sntp_setservername(0, "pool.ntp.org");
   sntp_set_time_sync_notification_cb(timeSyncNotificationCallback);
-  sntp_init();
+  esp_sntp_init();
 }
 
 } // namespace

@@ -38,7 +38,7 @@ std::string get(const std::string &key) {
 std::vector<std::string> keys() {
   std::vector<std::string> keyStrings;
   keyStrings.reserve(g_properties.size());
-  for (const auto p : g_properties) {
+  for (const auto &p : g_properties) {
     keyStrings.push_back(p.first);
   }
 
