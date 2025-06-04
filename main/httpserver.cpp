@@ -71,7 +71,9 @@ esp_err_t handlePropertiesList(httpd_req_t *req) {
   }
   httpd_resp_set_type(req, CONTENT_TYPE_JSON);
   set_allow_origin_header(req);
-  httpd_resp_sendstr(req, cJSON_PrintUnformatted(root));
+  char *json = cJSON_PrintUnformatted(root);
+  httpd_resp_sendstr(req, json);
+  cJSON_free(json);
   cJSON_Delete(root);
   return ESP_OK;
 }
