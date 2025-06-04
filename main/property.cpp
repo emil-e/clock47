@@ -12,9 +12,9 @@ std::unordered_map<std::string, Property *> g_properties;
 
 } // namespace
 
-void add(const std::string &key, Property *proeprty) {
+void add(const std::string &key, Property *property) {
   const auto lock = std::lock_guard(g_mutex);
-  g_properties[key] = proeprty;
+  g_properties[key] = property;
 }
 
 void set(const std::string &key, const std::string &value) {

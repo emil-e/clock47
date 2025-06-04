@@ -13,7 +13,7 @@ public:
   virtual ~Property() = default;
 };
 
-void add(const std::string &key, Property *proeprty);
+void add(const std::string &key, Property *property);
 void set(const std::string &key, const std::string &value);
 std::string get(const std::string &key);
 std::vector<std::string> keys();
